@@ -1,13 +1,13 @@
-package repository
+package usecases
 
 import (
 	"context"
-	"github.com/sanyarise/playlist/internal/models"
 
 	"github.com/google/uuid"
+	"github.com/sanyarise/playlist/internal/models"
 )
 
-type SongStore interface {
+type ISongUsecase interface {
 	CreateSong(ctx context.Context, song *models.Song) (uuid.UUID, error)
 	GetSong(ctx context.Context, id uuid.UUID) (*models.Song, error)
 	UpdateSong(ctx context.Context, song *models.Song) error

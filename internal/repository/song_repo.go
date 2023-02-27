@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
-	"playlist/internal/models"
+	"github.com/sanyarise/playlist/internal/models"
 	"strings"
 
 	"github.com/google/uuid"
@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ SongStore = (*songRepo)(nil)
+var _ SongStore = &songRepo{}
 
 type songRepo struct {
 	db     *PGres
