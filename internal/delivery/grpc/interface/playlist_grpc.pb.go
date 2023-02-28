@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v4.22.0
-// source: services/playlist/proto/playlist.proto
+// source: proto/playlist.proto
 
 package playlist
 
@@ -27,7 +27,7 @@ type PlaylistClient interface {
 	UpdateSong(ctx context.Context, in *UpdateSongRequest, opts ...grpc.CallOption) (*UpdateSongResponse, error)
 	DeleteSong(ctx context.Context, in *DeleteSongRequest, opts ...grpc.CallOption) (*DeleteSongResponse, error)
 	PlaySong(ctx context.Context, in *PlaySongRequest, opts ...grpc.CallOption) (*PlaySongResponse, error)
-	PauseSong(ctx context.Context, in *PauseSongRequest, opts ...grpc.CallOption) (*PauseSongRequest, error)
+	PauseSong(ctx context.Context, in *PauseSongRequest, opts ...grpc.CallOption) (*PauseSongResponse, error)
 	NextSong(ctx context.Context, in *NextSongRequest, opts ...grpc.CallOption) (*NextSongResponse, error)
 	PrevSong(ctx context.Context, in *PrevSongRequest, opts ...grpc.CallOption) (*PrevSongResponse, error)
 	AddSong(ctx context.Context, in *AddSongRequest, opts ...grpc.CallOption) (*AddSongResponse, error)
@@ -86,8 +86,8 @@ func (c *playlistClient) PlaySong(ctx context.Context, in *PlaySongRequest, opts
 	return out, nil
 }
 
-func (c *playlistClient) PauseSong(ctx context.Context, in *PauseSongRequest, opts ...grpc.CallOption) (*PauseSongRequest, error) {
-	out := new(PauseSongRequest)
+func (c *playlistClient) PauseSong(ctx context.Context, in *PauseSongRequest, opts ...grpc.CallOption) (*PauseSongResponse, error) {
+	out := new(PauseSongResponse)
 	err := c.cc.Invoke(ctx, "/playlist.Playlist/PauseSong", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ type PlaylistServer interface {
 	UpdateSong(context.Context, *UpdateSongRequest) (*UpdateSongResponse, error)
 	DeleteSong(context.Context, *DeleteSongRequest) (*DeleteSongResponse, error)
 	PlaySong(context.Context, *PlaySongRequest) (*PlaySongResponse, error)
-	PauseSong(context.Context, *PauseSongRequest) (*PauseSongRequest, error)
+	PauseSong(context.Context, *PauseSongRequest) (*PauseSongResponse, error)
 	NextSong(context.Context, *NextSongRequest) (*NextSongResponse, error)
 	PrevSong(context.Context, *PrevSongRequest) (*PrevSongResponse, error)
 	AddSong(context.Context, *AddSongRequest) (*AddSongResponse, error)
@@ -157,7 +157,7 @@ func (UnimplementedPlaylistServer) DeleteSong(context.Context, *DeleteSongReques
 func (UnimplementedPlaylistServer) PlaySong(context.Context, *PlaySongRequest) (*PlaySongResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PlaySong not implemented")
 }
-func (UnimplementedPlaylistServer) PauseSong(context.Context, *PauseSongRequest) (*PauseSongRequest, error) {
+func (UnimplementedPlaylistServer) PauseSong(context.Context, *PauseSongRequest) (*PauseSongResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PauseSong not implemented")
 }
 func (UnimplementedPlaylistServer) NextSong(context.Context, *NextSongRequest) (*NextSongResponse, error) {
@@ -389,5 +389,5 @@ var Playlist_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "services/playlist/proto/playlist.proto",
+	Metadata: "proto/playlist.proto",
 }

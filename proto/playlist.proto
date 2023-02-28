@@ -68,7 +68,7 @@ service Playlist {
     rpc UpdateSong(UpdateSongRequest) returns (UpdateSongResponse) {}
     rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse) {}
     rpc PlaySong(PlaySongRequest) returns (PlaySongResponse) {}
-    rpc PauseSong(PauseSongRequest) returns (PauseSongRequest) {}
+    rpc PauseSong(PauseSongRequest) returns (PauseSongResponse) {}
     rpc NextSong(NextSongRequest) returns (NextSongResponse) {}
     rpc PrevSong(PrevSongRequest) returns (PrevSongResponse) {}
     rpc AddSong(AddSongRequest) returns (AddSongResponse) {}

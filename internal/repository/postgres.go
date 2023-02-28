@@ -17,7 +17,7 @@ type PGres struct {
 }
 
 // Returns new empty connection
-func NewPgxStorage(ctx context.Context, logger *zap.SugaredLogger, dns string) (*PGres, error) {
+func NewPgxStorage(ctx context.Context, dns string, logger *zap.SugaredLogger) (*PGres, error) {
 	pg := &PGres{
 		logger: logger,
 	}
