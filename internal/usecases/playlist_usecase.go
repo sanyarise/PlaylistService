@@ -30,7 +30,7 @@ type node struct {
 }
 
 func NewPlaylist(logger *zap.SugaredLogger) IPlaylistUsecase {
-	logger.Debug("Enter in models NewPlaylist")
+	logger.Debug("Enter in usecases NewPlaylist()")
 	return &Playlist{logger: logger}
 }
 
