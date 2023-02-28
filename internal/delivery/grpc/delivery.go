@@ -14,16 +14,18 @@ import (
 )
 
 type Delivery struct {
-	usecase usecases.ISongUsecase
-	logger  *zap.SugaredLogger
+	usecase  usecases.ISongUsecase
+	playlist usecases.IPlaylistUsecase
+	logger   *zap.SugaredLogger
 	playlist.UnimplementedPlaylistServer
 }
 
-func NewDelivery(usecase usecases.ISongUsecase, logger *zap.SugaredLogger) *Delivery {
+func NewDelivery(usecase usecases.ISongUsecase, playlist usecases.IPlaylistUsecase, logger *zap.SugaredLogger) *Delivery {
 	logger.Debug("Enter in NewDelivery()")
 	return &Delivery{
-		usecase: usecase,
-		logger:  logger,
+		usecase:  usecase,
+		playlist: playlist,
+		logger:   logger,
 	}
 }
 
@@ -121,7 +123,7 @@ func (d *Delivery) DeleteSong(ctx context.Context, req *playlist.DeleteSongReque
 	default:
 		id, err := uuid.Parse(req.GetId())
 		if err != nil {
-			d.logger.Error("error on delete song: id %v is not correct. errror: %v", req.GetId(), err)
+			d.logger.Error("error on delete song: id %v is not correct. error: %v", req.GetId(), err)
 			return nil, status.Errorf(codes.InvalidArgument, "error on delete song: %v", err)
 		}
 		err = d.usecase.DeleteSong(ctx, id)
@@ -134,5 +136,86 @@ func (d *Delivery) DeleteSong(ctx context.Context, req *playlist.DeleteSongReque
 			return nil, status.Errorf(codes.Internal, "error on delete song: %v", err)
 		}
 		return &playlist.DeleteSongResponse{}, nil
+	}
+}
+
+func (d *Delivery) AddSong(ctx context.Context, req *playlist.AddSongRequest) (*playlist.AddSongResponse, error) {
+	d.logger.Debug("Enter in delivery AddSong()")
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "context is canceled")
+	default:
+		id, err := uuid.Parse(req.Song.GetId())
+		if err != nil {
+			d.logger.Error("error on add song: id %v is not correct. error: %v", req.Song.GetId(), err)
+			return nil, status.Errorf(codes.InvalidArgument, "error on add song: %v", err)
+		}
+		song := models.Song{
+			Id:       id,
+			Title:    req.Song.GetTitle(),
+			Duration: req.Song.GetDuration(),
+		}
+		d.playlist.AddSong(ctx, &song)
+		return &playlist.AddSongResponse{}, nil
+	}
+}
+
+func (d *Delivery) PlaySong(ctx context.Context, req *playlist.PlaySongRequest) (*playlist.PlaySongResponse, error) {
+	d.logger.Debug("Enter in delivery PlaySong()")
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "context is canceled")
+	default:
+		err := d.playlist.Play(ctx)
+		if err != nil {
+			d.logger.Error(err.Error())
+			return nil, status.Errorf(codes.Internal, "error on play: %v", err)
+		}
+		return &playlist.PlaySongResponse{}, nil
+	}
+}
+
+func (d *Delivery) PauseSong(ctx context.Context, req *playlist.PauseSongRequest) (*playlist.PauseSongResponse, error) {
+	d.logger.Debug("Enter in delivery PauseSong()")
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "context is canceled")
+	default:
+		err := d.playlist.Pause(ctx)
+		if err != nil {
+			d.logger.Error(err.Error())
+			return nil, status.Errorf(codes.Internal, "error on paused: %v", err)
+		}
+		return &playlist.PauseSongResponse{}, nil
+	}
+}
+
+func (d *Delivery) NextSong(ctx context.Context, req *playlist.NextSongRequest) (*playlist.NextSongResponse, error) {
+	d.logger.Debug("Enter in delivery NextSong()")
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "context is canceled")
+	default:
+		err := d.playlist.Next(ctx)
+		if err != nil {
+			d.logger.Error(err.Error())
+			return nil, status.Errorf(codes.Internal, "error on next song: %v", err)
+		}
+		return &playlist.NextSongResponse{}, nil
+	}
+}
+
+func (d *Delivery) PrevSong(ctx context.Context, req *playlist.PrevSongRequest) (*playlist.PrevSongResponse, error) {
+	d.logger.Debug("Enter in delivery PrevSong()")
+	select {
+	case <-ctx.Done():
+		return nil, status.Error(codes.Canceled, "context is canceled")
+	default:
+		err := d.playlist.Prev(ctx)
+		if err != nil {
+			d.logger.Error(err.Error())
+			return nil, status.Errorf(codes.Internal, "error on prev song: %v", err)
+		}
+		return &playlist.PrevSongResponse{}, nil
 	}
 }

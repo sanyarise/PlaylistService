@@ -1,4 +1,4 @@
-package models
+package usecases
 
 import (
 	"context"
@@ -6,8 +6,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sanyarise/playlist/internal/models"
 	"go.uber.org/zap"
 )
+
+var _ IPlaylistUsecase = &Playlist{}
 
 type Playlist struct {
 	head     *node
@@ -21,18 +24,18 @@ type Playlist struct {
 }
 
 type node struct {
-	song *Song
+	song *models.Song
 	prev *node
 	next *node
 }
 
-func NewPlaylist(logger *zap.SugaredLogger) *Playlist {
+func NewPlaylist(logger *zap.SugaredLogger) IPlaylistUsecase {
 	logger.Debug("Enter in models NewPlaylist")
 	return &Playlist{logger: logger}
 }
 
 // AddSong adds a song to the playlist
-func (p *Playlist) AddSong(ctx context.Context, song *Song) {
+func (p *Playlist) AddSong(ctx context.Context, song *models.Song) {
 	p.logger.Debug("Enter in models AddSong with args: ctx, song: %v", song)
 	select {
 	case <-ctx.Done():
