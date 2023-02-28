@@ -3,6 +3,7 @@ module github.com/sanyarise/playlist
 go 1.20
 
 require (
+	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v4 v4.18.0
 	go.uber.org/zap v1.24.0
