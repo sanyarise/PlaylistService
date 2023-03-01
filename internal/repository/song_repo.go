@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/sanyarise/playlist/internal/models"
 	"strings"
+
+	"github.com/sanyarise/playlist/internal/models"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
@@ -74,7 +75,7 @@ func (repo *songRepo) CreateSong(ctx context.Context, song *models.Song) (uuid.U
 
 // GetSong returns song by id
 func (repo *songRepo) GetSong(ctx context.Context, id uuid.UUID) (*models.Song, error) {
-	repo.logger.Debug("Enter in repository GetSong() with args: ctx, id: %v", id)
+	repo.logger.Debugf("Enter in repository GetSong() with args: ctx, id: %v", id)
 	select {
 	case <-ctx.Done():
 		return &models.Song{}, fmt.Errorf("context closed")
@@ -152,7 +153,7 @@ func (repo *songRepo) UpdateSong(ctx context.Context, song *models.Song) error {
 
 // DeleteSong deleted song from database by id
 func (repo *songRepo) DeleteSong(ctx context.Context, id uuid.UUID) error {
-	repo.logger.Debug("Enter in repository cart DeleteSong() with args: ctx, id: %v", id)
+	repo.logger.Debugf("Enter in repository cart DeleteSong() with args: ctx, id: %v", id)
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("context closed")

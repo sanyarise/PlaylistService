@@ -37,17 +37,17 @@ func (d *Delivery) CreateSong(ctx context.Context, req *playlist.CreateSongReque
 		return nil, status.Error(codes.Canceled, "context is canceled")
 	default:
 		song := &models.Song{
-			Title:    req.GetTitle(),
-			Duration: req.GetDuration(),
+			Title:    req.Title,
+			Duration: req.Duration,
 		}
 		id, err := d.usecase.CreateSong(ctx, song)
 		if err != nil {
-			d.logger.Error("error on create song: %v", err)
+			d.logger.Errorf("error on create song: %v", err)
 			return nil, status.Errorf(codes.Internal, "error on create song: %v", err)
 		}
-		d.logger.Info("song with id %v created success", id)
+		d.logger.Infof("song with id %v created success", id)
 		return &playlist.CreateSongResponse{
-			Id: song.Id.String(),
+			Id: id.String(),
 		}, nil
 	}
 }
@@ -59,18 +59,18 @@ func (d *Delivery) GetSong(ctx context.Context, req *playlist.GetSongRequest) (*
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
 	default:
-		id, err := uuid.Parse(req.GetId())
+		id, err := uuid.Parse(req.Id)
 		if err != nil {
-			d.logger.Error("error on get song: %v", err)
+			d.logger.Errorf("error on get song: %v", err)
 			return nil, status.Errorf(codes.InvalidArgument, "error on get song: %v", err)
 		}
 		modelsSong, err := d.usecase.GetSong(ctx, id)
 		if err != nil && errors.Is(models.ErrorNotFound{}, err) {
-			d.logger.Error("error on get song: song with id: %v not found", id)
+			d.logger.Errorf("error on get song: song with id: %v not found", id)
 			return nil, status.Errorf(codes.NotFound, "error on get song: song with id: %v not found", id)
 		}
 		if err != nil {
-			d.logger.Error("error on get song: %v", err)
+			d.logger.Errorf("error on get song: %v", err)
 			return nil, status.Errorf(codes.Internal, "error on get song: %v", err)
 		}
 		song := &playlist.Song{
@@ -91,23 +91,23 @@ func (d *Delivery) UpdateSong(ctx context.Context, req *playlist.UpdateSongReque
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
 	default:
-		id, err := uuid.Parse(req.GetId())
+		id, err := uuid.Parse(req.Id)
 		if err != nil {
-			d.logger.Error("error on update song: %v", err)
+			d.logger.Errorf("error on update song: %v", err)
 			return nil, status.Errorf(codes.InvalidArgument, "error on update song: %v", err)
 		}
 		updatedSong := &models.Song{
 			Id:       id,
-			Title:    req.GetTitle(),
-			Duration: req.GetDuration(),
+			Title:    req.Title,
+			Duration: req.Duration,
 		}
 		err = d.usecase.UpdateSong(ctx, updatedSong)
 		if err != nil && errors.Is(models.ErrorNotFound{}, err) {
-			d.logger.Error("error on update song: song with id: %v not found", id)
+			d.logger.Errorf("error on update song: song with id: %v not found", id)
 			return nil, status.Errorf(codes.NotFound, "error on update song: song with id: %v not found", id)
 		}
 		if err != nil {
-			d.logger.Error("error on update song: %v", err)
+			d.logger.Errorf("error on update song: %v", err)
 			return nil, status.Errorf(codes.Internal, "error un update song: %v", err)
 		}
 		return &playlist.UpdateSongResponse{}, nil
@@ -121,45 +121,58 @@ func (d *Delivery) DeleteSong(ctx context.Context, req *playlist.DeleteSongReque
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
 	default:
-		id, err := uuid.Parse(req.GetId())
+		id, err := uuid.Parse(req.Id)
 		if err != nil {
-			d.logger.Error("error on delete song: id %v is not correct. error: %v", req.GetId(), err)
+			d.logger.Errorf("error on delete song: id %v is not correct. error: %v", req.Id, err)
 			return nil, status.Errorf(codes.InvalidArgument, "error on delete song: %v", err)
+		}
+		currentSongId, isPlaying := d.playlist.GetStatus(ctx)
+		if currentSongId == id && isPlaying {
+			d.logger.Errorf("error on delete song with id: %v. Song is playing now", req.Id)
+			return nil, status.Errorf(codes.Aborted, "error on delete song with id: %v. Song is playing now", req.Id)
 		}
 		err = d.usecase.DeleteSong(ctx, id)
 		if err != nil && errors.Is(models.ErrorNotFound{}, err) {
-			d.logger.Error("error on delete song: song with id: %v not found", id)
+			d.logger.Errorf("error on delete song: song with id: %v not found", id)
 			return nil, status.Errorf(codes.NotFound, "error on delete song: song with id: %v not found", id)
 		}
 		if err != nil {
-			d.logger.Error("error on delete song: %v", err)
+			d.logger.Errorf("error on delete song: %v", err)
 			return nil, status.Errorf(codes.Internal, "error on delete song: %v", err)
 		}
 		return &playlist.DeleteSongResponse{}, nil
 	}
 }
 
+// AddSong calls usecase method for add song into playlist
 func (d *Delivery) AddSong(ctx context.Context, req *playlist.AddSongRequest) (*playlist.AddSongResponse, error) {
 	d.logger.Debug("Enter in delivery AddSong()")
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
 	default:
-		id, err := uuid.Parse(req.Song.GetId())
+		id, err := uuid.Parse(req.Id)
 		if err != nil {
-			d.logger.Error("error on add song: id %v is not correct. error: %v", req.Song.GetId(), err)
+			d.logger.Errorf("error on add song: id %v is not correct. error: %v", req.Id, err)
 			return nil, status.Errorf(codes.InvalidArgument, "error on add song: %v", err)
 		}
-		song := models.Song{
-			Id:       id,
-			Title:    req.Song.GetTitle(),
-			Duration: req.Song.GetDuration(),
+
+		song, err := d.usecase.GetSong(ctx, id)
+		if err != nil && errors.Is(models.ErrorNotFound{}, err) {
+			d.logger.Errorf("error on add song with id: %s - song not found", req.Id)
+			return nil, status.Errorf(codes.NotFound, "error on add song: song with id: %s not found", req.Id)
 		}
-		d.playlist.AddSong(ctx, &song)
+		if err != nil {
+			d.logger.Errorf("error on add song: %v", err)
+			return nil, status.Errorf(codes.Internal, "error on add song: %v", err)
+		}
+		d.playlist.AddSong(ctx, song)
+		d.logger.Infof("Song with id: %s add in playlist success", req.Id)
 		return &playlist.AddSongResponse{}, nil
 	}
 }
 
+// PlaySong calls usecase method to play
 func (d *Delivery) PlaySong(ctx context.Context, req *playlist.PlaySongRequest) (*playlist.PlaySongResponse, error) {
 	d.logger.Debug("Enter in delivery PlaySong()")
 	select {
@@ -171,10 +184,12 @@ func (d *Delivery) PlaySong(ctx context.Context, req *playlist.PlaySongRequest) 
 			d.logger.Error(err.Error())
 			return nil, status.Errorf(codes.Internal, "error on play: %v", err)
 		}
+		d.logger.Info("Play song success")
 		return &playlist.PlaySongResponse{}, nil
 	}
 }
 
+// PauseSong calls usecase method for pause
 func (d *Delivery) PauseSong(ctx context.Context, req *playlist.PauseSongRequest) (*playlist.PauseSongResponse, error) {
 	d.logger.Debug("Enter in delivery PauseSong()")
 	select {
@@ -186,10 +201,12 @@ func (d *Delivery) PauseSong(ctx context.Context, req *playlist.PauseSongRequest
 			d.logger.Error(err.Error())
 			return nil, status.Errorf(codes.Internal, "error on paused: %v", err)
 		}
+		d.logger.Info("Pause song success")
 		return &playlist.PauseSongResponse{}, nil
 	}
 }
 
+// NextSong calls usecase method to switch to the next song
 func (d *Delivery) NextSong(ctx context.Context, req *playlist.NextSongRequest) (*playlist.NextSongResponse, error) {
 	d.logger.Debug("Enter in delivery NextSong()")
 	select {
@@ -201,10 +218,12 @@ func (d *Delivery) NextSong(ctx context.Context, req *playlist.NextSongRequest) 
 			d.logger.Error(err.Error())
 			return nil, status.Errorf(codes.Internal, "error on next song: %v", err)
 		}
+		d.logger.Info("Swithing to the next song success")
 		return &playlist.NextSongResponse{}, nil
 	}
 }
 
+// PrevSong calls usecase method to switch to the prev song
 func (d *Delivery) PrevSong(ctx context.Context, req *playlist.PrevSongRequest) (*playlist.PrevSongResponse, error) {
 	d.logger.Debug("Enter in delivery PrevSong()")
 	select {
@@ -216,6 +235,7 @@ func (d *Delivery) PrevSong(ctx context.Context, req *playlist.PrevSongRequest) 
 			d.logger.Error(err.Error())
 			return nil, status.Errorf(codes.Internal, "error on prev song: %v", err)
 		}
+		d.logger.Info("Swithting to the previous song success")
 		return &playlist.PrevSongResponse{}, nil
 	}
 }

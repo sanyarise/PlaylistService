@@ -57,7 +57,7 @@ message PrevSongRequest {}
 message PrevSongResponse {}
 
 message AddSongRequest {
-    Song song = 1;
+    string id = 1;
 }
 
 message AddSongResponse {}

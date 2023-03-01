@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/sanyarise/playlist/config"
 	delivery "github.com/sanyarise/playlist/internal/delivery/grpc"
@@ -25,12 +26,12 @@ func main() {
 	logger := logger.NewLogger(cfg.LogLevel).Logger.Sugar()
 	logger.Info("Configuration successfully load")
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
 	dns := toDNS(cfg, logger)
 	db, err := repository.NewPgxStorage(ctx, dns, logger)
 	if err != nil {
-		logger.Fatal("can't initialize storage: %v", err)
+		logger.Fatalf("can't initialize storage: %v", err)
 	}
 	store := repository.NewSongRepo(db, logger)
 
@@ -44,10 +45,10 @@ func main() {
 	address := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		logger.Fatal("can't start listener: %v", err)
+		logger.Fatalf("can't start listener: %v", err)
 	}
 	go serveGRPC(server, listener)
-	logger.Info("Server start on port: %s", cfg.Port)
+	logger.Infof("Server start on port: %s", cfg.Port)
 
 	<-ctx.Done()
 	server.GracefulStop()
@@ -65,7 +66,7 @@ func main() {
 func toDNS(cfg *config.Config, l *zap.SugaredLogger) string {
 	l.Debug("Enter in main toDNS()")
 	dns := fmt.Sprintf("postgres://%s:%s@%s:%s/postgres?sslmode=disable", cfg.PGUser, cfg.PGPass, cfg.PGHost, cfg.PGPort)
-	l.Info("dns created success: %s", dns)
+	l.Infof("dns created success: %s", dns)
 	return dns
 }
 

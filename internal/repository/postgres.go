@@ -18,6 +18,7 @@ type PGres struct {
 
 // Returns new empty connection
 func NewPgxStorage(ctx context.Context, dns string, logger *zap.SugaredLogger) (*PGres, error) {
+	logger.Debugf("Enter in repository NewPgxStorage() with args: ctx, dns: %s, logger", dns)
 	pg := &PGres{
 		logger: logger,
 	}
@@ -54,7 +55,6 @@ func configurePool(conf *pgxpool.Config) (err error) {
 
 // Configurates connection to get ready for work
 func (pg *PGres) initStorage(ctx context.Context, dns string) (*pgxpool.Pool, error) {
-
 	conf, err := pgxpool.ParseConfig(dns)
 	if err != nil {
 		pg.logger.Errorf("can't init storage: %s", err)
@@ -72,7 +72,6 @@ func (pg *PGres) initStorage(ctx context.Context, dns string) (*pgxpool.Pool, er
 		return nil, fmt.Errorf("can't create pool %w", err)
 	}
 	pg.pool = dbPool
-	// pg.logger = pg.logger
 	return pg.GetPool(), nil
 }
 
@@ -83,7 +82,7 @@ func (pg *PGres) GetPool() *pgxpool.Pool {
 
 // ShutDown close connection with database
 func (pg *PGres) ShutDown(timeout int) error {
-	pg.logger.Debug("Enter in pgrepo ShutDown()")
+	pg.logger.Debugf("Enter in repository ShutDown() with args: timeout: %v", timeout)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
 	err := func(ctx context.Context) error {

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/sanyarise/playlist/internal/models"
 	"go.uber.org/zap"
 )
@@ -36,7 +37,7 @@ func NewPlaylist(logger *zap.SugaredLogger) IPlaylistUsecase {
 
 // AddSong adds a song to the playlist
 func (p *Playlist) AddSong(ctx context.Context, song *models.Song) {
-	p.logger.Debug("Enter in models AddSong with args: ctx, song: %v", song)
+	p.logger.Debugf("Enter in usecases AddSong with args: ctx, song: %v", song)
 	select {
 	case <-ctx.Done():
 		p.logger.Info("Context cancel")
@@ -63,7 +64,7 @@ func (p *Playlist) AddSong(ctx context.Context, song *models.Song) {
 
 // Play starts playback
 func (p *Playlist) Play(ctx context.Context) error {
-	p.logger.Debug("Enter in models Play()")
+	p.logger.Debug("Enter in usecases Play()")
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("context cancel")
@@ -112,7 +113,7 @@ func (p *Playlist) Play(ctx context.Context) error {
 
 // Pause pauses playback
 func (p *Playlist) Pause(ctx context.Context) error {
-	p.logger.Debug("Enter in models Pause()")
+	p.logger.Debug("Enter in usecases Pause()")
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("context cancel")
@@ -131,7 +132,7 @@ func (p *Playlist) Pause(ctx context.Context) error {
 
 // Next switches to the next song
 func (p *Playlist) Next(ctx context.Context) error {
-	p.logger.Debug("Enter in models Next()")
+	p.logger.Debug("Enter in usecases Next()")
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("context cancel")
@@ -158,7 +159,7 @@ func (p *Playlist) Next(ctx context.Context) error {
 
 // Prev swithces to the previous song
 func (p *Playlist) Prev(ctx context.Context) error {
-	p.logger.Debug("Enter in models Prev()")
+	p.logger.Debug("Enter in usecases Prev()")
 	select {
 	case <-ctx.Done():
 		return fmt.Errorf("context cancel")
@@ -185,12 +186,27 @@ func (p *Playlist) Prev(ctx context.Context) error {
 
 // playSong simulates playback
 func (p *Playlist) playSong(ctx context.Context, d time.Duration) {
-	p.logger.Debug("Enter in models playSong() with args: ctx, d: %v", d)
+	p.logger.Debugf("Enter in usecases playSong() with args: ctx, d: %v", d)
 	select {
 	case <-ctx.Done():
 		p.logger.Info("context cancel")
 		return
 	default:
-		time.Sleep(d)
+		p.logger.Infof("song with id: %s is playing. Title: %s, Duration: %s", p.current.song.Id, p.current.song.Title, p.current.song.Duration)
+		time.Sleep(d * time.Minute)
+		p.logger.Infof("song %s ends playback", p.current.song.Title)
+	}
+}
+
+// GetStatus returns current status of playlist
+func (p *Playlist) GetStatus(ctx context.Context) (uuid.UUID, bool) {
+	p.logger.Debug("Enter in usecases Playlist")
+	select {
+	case <-ctx.Done():
+		p.logger.Info("context cancel")
+		return uuid.Nil, false
+	default:
+		p.logger.Debugf("current song id: %v, current song playing: %t", p.current.song.Id, p.playing)
+		return p.current.song.Id, p.playing
 	}
 }

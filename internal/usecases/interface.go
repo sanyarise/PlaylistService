@@ -22,4 +22,5 @@ type IPlaylistUsecase interface {
 	Next(ctx context.Context) error
 	Prev(ctx context.Context) error
 	playSong(ctx context.Context, d time.Duration)
+	GetStatus(ctx context.Context) (uuid.UUID, bool)
 }
