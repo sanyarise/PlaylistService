@@ -17,10 +17,10 @@ type ISongUsecase interface {
 
 type IPlaylistUsecase interface {
 	AddSong(ctx context.Context, song *models.Song)
+	DeleteSong(ctx context.Context, id uuid.UUID) error
 	Play(ctx context.Context) error
 	Pause(ctx context.Context) error
 	Next(ctx context.Context) error
 	Prev(ctx context.Context) error
-	playSong(ctx context.Context, d time.Duration)
-	GetStatus(ctx context.Context) (uuid.UUID, bool)
+	playSong(d time.Duration)
 }

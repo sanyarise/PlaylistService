@@ -126,10 +126,13 @@ func (d *Delivery) DeleteSong(ctx context.Context, req *playlist.DeleteSongReque
 			d.logger.Errorf("error on delete song: id %v is not correct. error: %v", req.Id, err)
 			return nil, status.Errorf(codes.InvalidArgument, "error on delete song: %v", err)
 		}
-		currentSongId, isPlaying := d.playlist.GetStatus(ctx)
-		if currentSongId == id && isPlaying {
-			d.logger.Errorf("error on delete song with id: %v. Song is playing now", req.Id)
-			return nil, status.Errorf(codes.Aborted, "error on delete song with id: %v. Song is playing now", req.Id)
+		err = d.playlist.DeleteSong(ctx, id)
+		if err != nil && errors.Is(err, models.ErrorAlreadyPlaying{}) {
+			d.logger.Errorf("error on delete song: song with id: %v already playing", id)
+			return nil, status.Errorf(codes.Aborted, "error on delete song: song with id: %v already playing", id)
+		}
+		if err != nil {
+			d.logger.Errorf("error on delete song from playlist: %v", err)
 		}
 		err = d.usecase.DeleteSong(ctx, id)
 		if err != nil && errors.Is(models.ErrorNotFound{}, err) {
