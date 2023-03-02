@@ -75,3 +75,5 @@ go run ./cmd/playlistService/main.go
 # Видео:
 
 <img src="./images/video.gif">
+
+[видео в полном размере](https://disk.yandex.ru/i/z3mZisWzMvqdCg), т.к. в таком формате видно плохо
