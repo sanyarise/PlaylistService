@@ -66,63 +66,6 @@ func (p *Playlist) AddSong(ctx context.Context, song *models.Song) {
 	}
 }
 
-// DeleteSong delete song from playlist
-func (p *Playlist) DeleteSong(ctx context.Context, id uuid.UUID) error {
-	p.logger.Debugf("Enter in playlist DeleteSong with args: ctx, id: %v", id)
-	select {
-	case <-ctx.Done():
-		return fmt.Errorf("context cancel")
-	default:
-		if _, ok := p.idx[id]; !ok {
-			return fmt.Errorf("song with id: %v is not in playlist", id)
-		}
-		if p.current.song.Id == id && p.playing {
-			return models.ErrorAlreadyPlaying{}
-		}
-		cur := p.head
-		for {
-			p.mutex.Lock()
-			defer p.mutex.Unlock()
-			if cur.song.Id == id {
-				if cur == p.head && cur.next != nil {
-					if cur == p.current {
-						p.current = cur.next
-					}
-					p.head = p.head.next
-					p.head.prev = nil
-					break
-				}
-				if cur == p.head {
-					p.current = nil
-					p.head = nil
-					break
-				}
-				if cur == p.tail && cur.prev != nil {
-					if cur == p.current {
-						p.current = nil
-					}
-					p.tail = cur.prev
-					p.tail.next = nil
-					break
-				}
-				if cur.next != nil && cur.prev != nil {
-					if cur == p.current {
-						p.current = cur.next
-					}
-					cur.next.prev = cur.prev
-					cur.prev.next = cur.next
-					break
-				}
-			}
-			if cur.next == nil {
-				return fmt.Errorf("can't delete song with id %v. Song not in playlist", id)
-			}
-			cur = cur.next
-		}
-		return nil
-	}
-}
-
 // Play starts playback
 func (p *Playlist) Play(ctx context.Context) error {
 	p.logger.Debug("Enter in usecases Play()")
@@ -298,4 +241,15 @@ func (p *Playlist) playSong(d time.Duration) {
 		}
 	}
 	p.logger.Infof("song %s ends playback", p.current.song.Title)
+}
+
+func (p *Playlist) GetStatus(ctx context.Context) (uuid.UUID, bool) {
+	p.logger.Debug("Enter in playlist GetStatus()")
+	select {
+	case <-ctx.Done():
+		p.logger.Error(ctx.Err().Error())
+		return uuid.Nil, false
+	default:
+		return p.current.song.Id, p.playing
+	}
 }

@@ -46,53 +46,6 @@ func TestAddSong(t *testing.T) {
 	assert.Equal(t, p.head.next, p.tail)
 }
 
-func TestDeleteSong(t *testing.T) {
-	l := zap.L().Sugar()
-	idx := make(map[uuid.UUID]struct{})
-	p := new(Playlist)
-	p.idx = idx
-	p.logger = l
-	testId := uuid.New()
-	testSong := &models.Song{
-		Id:       testId,
-		Title:    "test",
-		Duration: 0,
-	}
-	testId2 := uuid.New()
-	testSong2 := &models.Song{
-		Id:       testId2,
-		Title:    "test2",
-		Duration: 0,
-	}
-	ctx := context.Background()
-	ctxWithTimeout, cancel := context.WithCancel(ctx)
-	cancel()
-
-	err := p.DeleteSong(ctxWithTimeout, testId)
-	assert.Error(t, err)
-
-	err = p.DeleteSong(ctx, testId)
-	assert.Error(t, err)
-
-	p.AddSong(ctx, testSong)
-	p.current = p.head
-	p.playing = true
-	err = p.DeleteSong(ctx, testId)
-	assert.Error(t, err)
-	assert.Equal(t, models.ErrorAlreadyPlaying{}, err)
-
-	p.playing = false
-	err = p.DeleteSong(ctx, testId)
-	assert.NoError(t, err)
-
-	p.AddSong(ctx, testSong)
-	p.current = p.head
-	p.AddSong(ctx, testSong2)
-	err = p.DeleteSong(ctx, testId)
-	assert.NoError(t, err)
-	assert.Equal(t, p.tail, p.current)
-}
-
 func TestPlay(t *testing.T) {
 	l := zap.L().Sugar()
 	idx := make(map[uuid.UUID]struct{})
