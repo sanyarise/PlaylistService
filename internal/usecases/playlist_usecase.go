@@ -267,13 +267,11 @@ func (p *Playlist) playSong(d time.Duration) {
 	p.logger.Debugf("Enter in usecases playSong() with args: ctx, d: %v", d)
 	p.logger.Infof("song with id: %s is playing. Title: %s, Duration: %s", p.current.song.Id, p.current.song.Title, p.current.song.Duration)
 	finish := time.Now().Add(d * time.Minute)
-	p.logger.Debugf("finish: %v", finish)
 	count := 0
 	for {
 		if !p.paused {
 			if count == 0 {
 				if time.Now().String() >= finish.String() {
-					p.logger.Debugf("time.Now: %v, finish: %v", time.Now(), finish)
 					break
 				}
 			} else {
@@ -282,7 +280,6 @@ func (p *Playlist) playSong(d time.Duration) {
 			}
 		} else {
 			if count == 0 {
-				p.logger.Debug("p.paused = true")
 				d = time.Until(finish)
 				count++
 			}
@@ -290,6 +287,14 @@ func (p *Playlist) playSong(d time.Duration) {
 		if !p.playing {
 			p.logger.Infof("song with id: %v is stopped", p.current.song.Id)
 			return
+		}
+		if p.playing && !p.paused {
+			fmt.Printf("Play song:%v\n", p.current.song.Title)
+			time.Sleep(1 * time.Second)
+		}
+		if p.paused {
+			fmt.Printf("Pause song%v\n", p.current.song.Title)
+			time.Sleep(1 * time.Second)
 		}
 	}
 	p.logger.Infof("song %s ends playback", p.current.song.Title)

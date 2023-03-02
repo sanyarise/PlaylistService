@@ -15,3 +15,6 @@ usecase_mock:
 
 test:
 	go test ./... -v
+
+client:
+	go run ./cmd/client/main.go

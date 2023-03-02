@@ -3,6 +3,7 @@ module github.com/sanyarise/playlist
 go 1.19
 
 require (
+	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
