@@ -226,15 +226,15 @@ func TestDeleteSong(t *testing.T) {
 	assert.Equal(t, codes.InvalidArgument, st.Code())
 	assert.True(t, ok)
 
-	playlist_usecase.EXPECT().DeleteSong(ctx, testId).Return(models.ErrorAlreadyPlaying{})
+	playlist_usecase.EXPECT().GetStatus(ctx).Return(testId, true)
 	res, err = delivery.DeleteSong(ctx, testReq)
 	st, ok = status.FromError(err)
 	assert.Error(t, err)
 	assert.Nil(t, res)
-	assert.Equal(t, codes.Aborted, st.Code())
+	assert.Equal(t, codes.Unavailable, st.Code())
 	assert.True(t, ok)
 
-	playlist_usecase.EXPECT().DeleteSong(ctx, testId).Return(fmt.Errorf("error"))
+	playlist_usecase.EXPECT().GetStatus(ctx).Return(testId, false)
 	usecase.EXPECT().DeleteSong(ctx, testId).Return(models.ErrorNotFound{})
 	res, err = delivery.DeleteSong(ctx, testReq)
 	st, ok = status.FromError(err)
@@ -243,7 +243,7 @@ func TestDeleteSong(t *testing.T) {
 	assert.Equal(t, codes.NotFound, st.Code())
 	assert.True(t, ok)
 
-	playlist_usecase.EXPECT().DeleteSong(ctx, testId).Return(fmt.Errorf("error"))
+	playlist_usecase.EXPECT().GetStatus(ctx).Return(testId, false)
 	usecase.EXPECT().DeleteSong(ctx, testId).Return(fmt.Errorf("error"))
 	res, err = delivery.DeleteSong(ctx, testReq)
 	st, ok = status.FromError(err)
@@ -252,7 +252,7 @@ func TestDeleteSong(t *testing.T) {
 	assert.Equal(t, codes.Internal, st.Code())
 	assert.True(t, ok)
 
-	playlist_usecase.EXPECT().DeleteSong(ctx, testId).Return(nil)
+	playlist_usecase.EXPECT().GetStatus(ctx).Return(testId, false)
 	usecase.EXPECT().DeleteSong(ctx, testId).Return(nil)
 	res, err = delivery.DeleteSong(ctx, testReq)
 	assert.NoError(t, err)

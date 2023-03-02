@@ -7,7 +7,6 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
-	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/google/uuid"
@@ -130,18 +129,19 @@ func (mr *MockIPlaylistUsecaseMockRecorder) AddSong(ctx, song interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSong", reflect.TypeOf((*MockIPlaylistUsecase)(nil).AddSong), ctx, song)
 }
 
-// DeleteSong mocks base method.
-func (m *MockIPlaylistUsecase) DeleteSong(ctx context.Context, id uuid.UUID) error {
+// GetStatus mocks base method.
+func (m *MockIPlaylistUsecase) GetStatus(ctx context.Context) (uuid.UUID, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteSong", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "GetStatus", ctx)
+	ret0, _ := ret[0].(uuid.UUID)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
 }
 
-// DeleteSong indicates an expected call of DeleteSong.
-func (mr *MockIPlaylistUsecaseMockRecorder) DeleteSong(ctx, id interface{}) *gomock.Call {
+// GetStatus indicates an expected call of GetStatus.
+func (mr *MockIPlaylistUsecaseMockRecorder) GetStatus(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSong", reflect.TypeOf((*MockIPlaylistUsecase)(nil).DeleteSong), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatus", reflect.TypeOf((*MockIPlaylistUsecase)(nil).GetStatus), ctx)
 }
 
 // Next mocks base method.
@@ -198,16 +198,4 @@ func (m *MockIPlaylistUsecase) Prev(ctx context.Context) error {
 func (mr *MockIPlaylistUsecaseMockRecorder) Prev(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Prev", reflect.TypeOf((*MockIPlaylistUsecase)(nil).Prev), ctx)
-}
-
-// playSong mocks base method.
-func (m *MockIPlaylistUsecase) playSong(d time.Duration) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "playSong", d)
-}
-
-// playSong indicates an expected call of playSong.
-func (mr *MockIPlaylistUsecaseMockRecorder) playSong(d interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "playSong", reflect.TypeOf((*MockIPlaylistUsecase)(nil).playSong), d)
 }

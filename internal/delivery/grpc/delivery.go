@@ -33,11 +33,6 @@ func NewDelivery(usecase usecases.ISongUsecase, playlist usecases.IPlaylistUseca
 func (d *Delivery) CreateSong(ctx context.Context, req *playlist.CreateSongRequest) (*playlist.CreateSongResponse, error) {
 	d.logger.Debug("Enter in delivery CreateSong()")
 
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
-
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
@@ -61,11 +56,6 @@ func (d *Delivery) CreateSong(ctx context.Context, req *playlist.CreateSongReque
 // GetSong parsed request and calls usecase method for get song
 func (d *Delivery) GetSong(ctx context.Context, req *playlist.GetSongRequest) (*playlist.GetSongResponse, error) {
 	d.logger.Debug("Enter in delivery GetSong()")
-
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
 
 	select {
 	case <-ctx.Done():
@@ -99,10 +89,7 @@ func (d *Delivery) GetSong(ctx context.Context, req *playlist.GetSongRequest) (*
 // UpdateSong parsed request and calls usecase method for update song
 func (d *Delivery) UpdateSong(ctx context.Context, req *playlist.UpdateSongRequest) (*playlist.UpdateSongResponse, error) {
 	d.logger.Debug("Enter in delivery UpdateSong()")
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
+
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
@@ -134,11 +121,6 @@ func (d *Delivery) UpdateSong(ctx context.Context, req *playlist.UpdateSongReque
 func (d *Delivery) DeleteSong(ctx context.Context, req *playlist.DeleteSongRequest) (*playlist.DeleteSongResponse, error) {
 	d.logger.Debug("Enter in delivery DeleteSong()")
 
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
-
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
@@ -148,13 +130,9 @@ func (d *Delivery) DeleteSong(ctx context.Context, req *playlist.DeleteSongReque
 			d.logger.Errorf("error on delete song: id %v is not correct. error: %v", req.Id, err)
 			return nil, status.Errorf(codes.InvalidArgument, "error on delete song: %v", err)
 		}
-		err = d.playlist.DeleteSong(ctx, id)
-		if err != nil && errors.Is(err, models.ErrorAlreadyPlaying{}) {
-			d.logger.Errorf("error on delete song: song with id: %v already playing", id)
-			return nil, status.Errorf(codes.Aborted, "error on delete song: song with id: %v already playing", id)
-		}
-		if err != nil {
-			d.logger.Errorf("error on delete song from playlist: %v", err)
+		currentSongId, isPlaying := d.playlist.GetStatus(ctx)
+		if currentSongId == id && isPlaying {
+			return nil, status.Errorf(codes.Unavailable, "error on delete song: %v", err)
 		}
 		err = d.usecase.DeleteSong(ctx, id)
 		if err != nil && errors.Is(models.ErrorNotFound{}, err) {
@@ -172,11 +150,6 @@ func (d *Delivery) DeleteSong(ctx context.Context, req *playlist.DeleteSongReque
 // AddSong calls usecase method for add song into playlist
 func (d *Delivery) AddSong(ctx context.Context, req *playlist.AddSongRequest) (*playlist.AddSongResponse, error) {
 	d.logger.Debug("Enter in delivery AddSong()")
-
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
 
 	select {
 	case <-ctx.Done():
@@ -207,10 +180,6 @@ func (d *Delivery) AddSong(ctx context.Context, req *playlist.AddSongRequest) (*
 func (d *Delivery) PlaySong(ctx context.Context, req *playlist.PlaySongRequest) (*playlist.PlaySongResponse, error) {
 	d.logger.Debug("Enter in delivery PlaySong()")
 
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
@@ -228,11 +197,6 @@ func (d *Delivery) PlaySong(ctx context.Context, req *playlist.PlaySongRequest) 
 // PauseSong calls usecase method for pause
 func (d *Delivery) PauseSong(ctx context.Context, req *playlist.PauseSongRequest) (*playlist.PauseSongResponse, error) {
 	d.logger.Debug("Enter in delivery PauseSong()")
-
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
 
 	select {
 	case <-ctx.Done():
@@ -252,11 +216,6 @@ func (d *Delivery) PauseSong(ctx context.Context, req *playlist.PauseSongRequest
 func (d *Delivery) NextSong(ctx context.Context, req *playlist.NextSongRequest) (*playlist.NextSongResponse, error) {
 	d.logger.Debug("Enter in delivery NextSong()")
 
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
-
 	select {
 	case <-ctx.Done():
 		return nil, status.Error(codes.Canceled, "context is canceled")
@@ -274,11 +233,6 @@ func (d *Delivery) NextSong(ctx context.Context, req *playlist.NextSongRequest) 
 // PrevSong calls usecase method to switch to the prev song
 func (d *Delivery) PrevSong(ctx context.Context, req *playlist.PrevSongRequest) (*playlist.PrevSongResponse, error) {
 	d.logger.Debug("Enter in delivery PrevSong()")
-
-	if err := ctx.Err(); err != nil {
-		d.logger.Error(err.Error())
-		return nil, status.Error(codes.Canceled, "context is canceled")
-	}
 
 	select {
 	case <-ctx.Done():
