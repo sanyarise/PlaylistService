@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/sanyarise/playlist/internal/models"
@@ -22,5 +21,4 @@ type IPlaylistUsecase interface {
 	Pause(ctx context.Context) error
 	Next(ctx context.Context) error
 	Prev(ctx context.Context) error
-	playSong(d time.Duration)
 }

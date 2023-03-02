@@ -12,3 +12,6 @@ store_mock:
 
 usecase_mock:
 	mockgen -source=internal/usecases/interface.go -destination=internal/usecases/mocks/usecases_mock.go -package=mocks
+
+test:
+	go test ./... -v
