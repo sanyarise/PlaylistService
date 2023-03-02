@@ -1,0 +1,79 @@
+syntax = "proto3";
+package playlist;
+
+option go_package = ".;playlist";
+
+message Song {
+    string id = 1;
+    string title = 2;
+    uint32 duration = 3;
+}
+
+message CreateSongRequest {
+    string title = 1;
+    uint32 duration = 2;
+}
+
+message CreateSongResponse {
+    string id = 1;
+}
+
+message GetSongRequest {
+    string id = 1;
+}
+
+message GetSongResponse {
+    Song song = 1;
+}
+
+message UpdateSongRequest {
+    string id = 1;
+    string title = 2;
+    uint32 duration = 3;
+}
+
+message UpdateSongResponse {}
+
+message DeleteSongRequest{
+    string id = 1;
+}
+
+message DeleteSongResponse {}
+
+message PlaySongRequest {}
+
+message PlaySongResponse {}
+
+message PauseSongRequest {}
+
+message PauseSongResponse {}
+
+message NextSongRequest {}
+
+message NextSongResponse {}
+
+message PrevSongRequest {}
+
+message PrevSongResponse {}
+
+message AddSongRequest {
+    string id = 1;
+}
+
+message AddSongResponse {}
+
+service Playlist {
+    rpc CreateSong(CreateSongRequest) returns (CreateSongResponse) {}
+    rpc GetSong(GetSongRequest) returns (GetSongResponse) {}
+    rpc UpdateSong(UpdateSongRequest) returns (UpdateSongResponse) {}
+    rpc DeleteSong(DeleteSongRequest) returns (DeleteSongResponse) {}
+    rpc PlaySong(PlaySongRequest) returns (PlaySongResponse) {}
+    rpc PauseSong(PauseSongRequest) returns (PauseSongResponse) {}
+    rpc NextSong(NextSongRequest) returns (NextSongResponse) {}
+    rpc PrevSong(PrevSongRequest) returns (PrevSongResponse) {}
+    rpc AddSong(AddSongRequest) returns (AddSongResponse) {}
+}
+
+
+
+
