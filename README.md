@@ -55,6 +55,23 @@ make down
 docker-compose down
 ```
 .
-
+8. Если нужно запустить сервис не в режиме контейнера, нужно набрать команду для запуска отдельно контейнера с базой данных:
+```bash
+make db
+```
+или если не установлена утилита make, то
+```bash
+docker-compose up postgres -d
+```
+. Затем нужно набрать
+```bash
+make run
+```
+или 
+```bash
+go run ./cmd/playlistService/main.go
+```
+затем запустить сервис по инструкции из 5 шага.
 # Видео:
 
+<img src="./images/video.gif">

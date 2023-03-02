@@ -18,3 +18,6 @@ test:
 
 client:
 	go run ./cmd/client/main.go
+
+db:
+	docker-compose up postgres -d
