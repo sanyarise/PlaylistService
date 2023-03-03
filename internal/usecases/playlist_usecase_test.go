@@ -12,9 +12,7 @@ import (
 
 func TestAddSong(t *testing.T) {
 	l := zap.L().Sugar()
-	idx := make(map[uuid.UUID]struct{})
 	p := new(Playlist)
-	p.idx = idx
 	p.logger = l
 	testId := uuid.New()
 	testSong := &models.Song{
@@ -34,23 +32,17 @@ func TestAddSong(t *testing.T) {
 	p.AddSong(ctxWithTimeout, testSong)
 
 	p.AddSong(ctx, testSong)
-	_, ok := p.idx[testId]
-	assert.True(t, ok)
 	assert.Equal(t, testSong, p.head.song)
 	assert.Equal(t, p.tail, p.head)
 
 	p.AddSong(ctx, testSong2)
-	_, ok = p.idx[testId2]
-	assert.True(t, ok)
 	assert.Equal(t, p.tail.prev, p.head)
 	assert.Equal(t, p.head.next, p.tail)
 }
 
 func TestPlay(t *testing.T) {
 	l := zap.L().Sugar()
-	idx := make(map[uuid.UUID]struct{})
 	p := new(Playlist)
-	p.idx = idx
 	p.logger = l
 	ctx := context.Background()
 	ctxWithTimeout, cancel := context.WithCancel(ctx)
@@ -92,9 +84,7 @@ func TestPlay(t *testing.T) {
 
 func TestPause(t *testing.T) {
 	l := zap.L().Sugar()
-	idx := make(map[uuid.UUID]struct{})
 	p := new(Playlist)
-	p.idx = idx
 	p.logger = l
 	ctx := context.Background()
 	ctxWithTimeout, cancel := context.WithCancel(ctx)
@@ -119,11 +109,9 @@ func TestPause(t *testing.T) {
 	assert.True(t, p.paused)
 }
 
-func TestNext(t *testing.T){
+func TestNext(t *testing.T) {
 	l := zap.L().Sugar()
-	idx := make(map[uuid.UUID]struct{})
 	p := new(Playlist)
-	p.idx = idx
 	p.logger = l
 	ctx := context.Background()
 	ctxWithTimeout, cancel := context.WithCancel(ctx)
@@ -167,11 +155,9 @@ func TestNext(t *testing.T){
 	assert.Equal(t, "test2", p.current.song.Title)
 }
 
-func TestPrev(t *testing.T){
+func TestPrev(t *testing.T) {
 	l := zap.L().Sugar()
-	idx := make(map[uuid.UUID]struct{})
 	p := new(Playlist)
-	p.idx = idx
 	p.logger = l
 	ctx := context.Background()
 	ctxWithTimeout, cancel := context.WithCancel(ctx)
