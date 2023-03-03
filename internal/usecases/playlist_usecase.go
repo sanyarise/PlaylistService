@@ -18,7 +18,6 @@ type Playlist struct {
 	tail     *node
 	current  *node
 	mutex    sync.RWMutex
-	idx      map[uuid.UUID]struct{}
 	playing  bool
 	paused   bool
 	finished bool
@@ -33,8 +32,7 @@ type node struct {
 
 func NewPlaylist(logger *zap.SugaredLogger) IPlaylistUsecase {
 	logger.Debug("Enter in usecases NewPlaylist()")
-	idx := make(map[uuid.UUID]struct{})
-	return &Playlist{idx: idx, logger: logger}
+	return &Playlist{logger: logger}
 }
 
 // AddSong adds a song to the playlist
@@ -55,14 +53,12 @@ func (p *Playlist) AddSong(ctx context.Context, song *models.Song) {
 		if p.head == nil {
 			p.head = node
 			p.tail = node
-			p.idx[song.Id] = struct{}{}
 			return
 		}
 
 		p.tail.next = node
 		node.prev = p.tail
 		p.tail = node
-		p.idx[song.Id] = struct{}{}
 	}
 }
 
